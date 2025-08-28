@@ -1,269 +1,196 @@
 import streamlit as st
-import time
 import random
+import time
 
-st.set_page_config(page_title="Bestie Surprise 💖", layout="centered")
+st.set_page_config(page_title="Surprise Box 🎁", layout="centered")
 
-# ---------- STATE ----------
-if "step" not in st.session_state:
-    st.session_state.step = 0
-if "typing_done" not in st.session_state:
-    st.session_state.typing_done = False
-if "current_joke" not in st.session_state:
-    st.session_state.current_joke = ""
-
-# ---------- CSS ----------
+# 🎨 Custom CSS
 st.markdown("""
-<style>
-/* Full background gradient */
-[data-testid="stAppViewContainer"] {
-    background: linear-gradient(120deg, #ff99cc, #ff66b3, #ff3399);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-    overflow: hidden;
-}
-@keyframes gradientBG {
-    0% {background-position:0% 50%;}
-    50% {background-position:100% 50%;}
-    100% {background-position:0% 50%;}
-}
-
-/* Remove Streamlit padding */
-.block-container { padding: 0 !important; margin: 0 !important; }
-
-/* Lock screen */
-html, body, [data-testid="stAppViewContainer"] {
-    height: 100%;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-}
-
-/* Centered container */
-.full-center {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    max-width: 650px;
-}
-
-/* Typing text */
-.typing {
-    font-size: clamp(20px, 4.5vw, 28px);
-    font-weight: 700;
-    color: #fff;
-    margin: 10px 0;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    opacity: 0;
-    animation: fadeIn 0.7s forwards;
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Button styling */
-.stButton { display: flex; justify-content: center; margin-top: 20px; }
-.stButton button {
-    font-size: clamp(14px, 3.5vw, 18px) !important;
-    padding: 12px 26px !important;
-    border-radius: 14px;
-    background: linear-gradient(45deg, #ff4da6, #ff80bf);
-    color: #fff;
-    border: 0;
-    font-weight: 700;
-    width: min(260px, 80%);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    transition: all 0.5s ease-in-out;
-}
-.stButton button:hover {
-    transform: scale(1.05);
-    background: linear-gradient(45deg, #ff3399, #ff66b2);
-}
-
-/* Smooth fade for container */
-.fade-container {
-    animation: fadeContainer 0.6s ease-in-out;
-}
-@keyframes fadeContainer {
-    from {opacity: 0;}
-    to {opacity: 1;}
-}
-
-/* Floating hearts for love step */
-@keyframes floatHeart {
-    0% { transform: translateY(0) rotate(0deg); opacity:1; }
-    100% { transform: translateY(-600px) rotate(360deg); opacity:0; }
-}
-.heart {
-    position: fixed;
-    color: #ff66b2;
-    font-size: 24px;
-    animation: floatHeart 6s linear infinite;
-    z-index: 9999;
-}
-
-/* Twinkling stars in background */
-@keyframes twinkle {
-    0%, 100% {opacity: 0.3;}
-    50% {opacity: 1;}
-}
-.star {
-    position: fixed;
-    color: #fff;
-    font-size: 12px;
-    animation: twinkle 2s infinite;
-    z-index: 1;
-}
-</style>
+    <style>
+    .stApp { text-align: center; background: linear-gradient(120deg, #f9d6eb, #d6f9f0); }
+    .big-title { font-size: 36px; font-weight: bold; color: #ff2e63; }
+    .box {
+        font-size: 22px;
+        background: white;
+        padding: 20px;
+        border-radius: 20px;
+        display: inline-block;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        margin-top: 20px;
+        max-width: 600px;
+    }
+    button {
+        border-radius: 12px !important;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
-# ---------- Typing ----------
-def type_line(line: str, container, speed: float = 0.04):
-    out = ""
-    for ch in line:
-        out += ch
-        container.markdown(f"<div class='typing'>{out}</div>", unsafe_allow_html=True)
-        time.sleep(speed)
-    container.markdown(f"<div class='typing'>{line}</div>", unsafe_allow_html=True)
-    time.sleep(0.25)
+# 📝 User input
+user_name = st.text_input("Your Name 💖:")
 
-def type_lines(lines, box, speed: float = 0.04):
-    for line in lines:
-        line_spot = box.empty()
-        type_line(line, line_spot, speed)
+# 😂 Jokes (15+)
+jokes =  [
+    "👩‍🏫 Teacher: Tum late kyu aaye?\n😅 Pappu: Sir, board pe likha tha 'School Ahead, Go Slow'...\n🤣 to main dheere aaya!",
+    "👩 Wife: Suno ji, main mar gayi to kya karoge?\n😅 Husband: Main bhi pagal ho jaunga… shaadi kar lunga!",
+    "😂 Santa: Doctor sahab, mujhe bhoolne ki bimaari hai!\n👨‍⚕️ Doctor: Kab se?\n😅 Santa: Kab se kya?",
+    "😆 Pappu: Sir, mera dimaag computer jaisa hai!\n👨‍🏫 Teacher: Kaunsa Windows?\n😅 Pappu: Nahi sir, hamesha 'Hang' ho jata hai!",
+    "👮 Police: Tumne seat belt kyun nahi pehni?\n😅 Driver: Sir, main to destiny pe believe karta hoon!",
+    "🤣 Husband: Tum mujhe chhod ke chali gayi to main kya karunga?\n😅 Wife: Phir tumne kya karna hai, main to khush ho jaungi!",
+    "😂 Teacher: Batao, AC ka full form?\n😅 Student: Aayi Chutti!",
+    "🤣 Santa: Ek ladki ne mujhe apna number diya...\n😅 Banta: Kya baat hai!\nSanta: Lekin usne bola tha 'Emergency ke liye'!",
+    "😅 Pappu: Papa mujhe bike chahiye!\n👨 Papa: Paise nahi hai beta.\n😅 Pappu: To ped pe paise uga do!",
+    "😂 Biwi: Tum mujhe kahan le jaoge shaadi ke baad?\n😅 Pati: Jahan tum chaho!\n😂 Biwi: To chalo mummy ke ghar hi rahte hain!",
+    "🤣 Student: Sir, mera pen kho gaya.\n👨‍🏫 Teacher: To tumhe punishment milegi.\n😅 Student: Lekin sir, pen to 'Pilot' tha, to woh ud gaya!",
+    "😂 Santa: Train late kyu hai?\n👮 Guard: Engine mobile charge kar raha hai!",
+    "🤣 Pappu: Sir, light gayi to kya karna chahiye?\n👨‍🏫 Teacher: Candles jalani chahiye.\n🤣 Pappu: Lekin sir, cake kahan se laun?",
+    "😅 Wife: Tum mujhe kab surprise doge?\n😄 Husband: Jab tum phone silent pe rakhogi!",
+    "🤣 Teacher: Homework kyu nahi kiya?\n😅 Student: Sir, wifi slow tha!",
+    "😂 Pappu: Mujhe neend nahi aa rahi!\n🤣 Dost: Mobile side me rakh aur aankh bandh kar!",
+    "😆 Boyfriend: Tum mujhe kab shaadi karogi?\n😅 Girlfriend: Jab tum mujhe battery ka backup doge!",
+    "🤣 Santa: Mere phone mein balance khatam ho gaya!\n😅 Banta: Kya karun?\nSanta: Recharge kar de, dosti nibha!",
+    "😂 Teacher: Sooraj kaha se nikalta hai?\n😅 Student: Neighbor ke ghar se!",
+    "🤣 Biwi: Tum mujhe khush kyun nahi rakhte?\n😅 Pati: Khud try kyun nahi karti?",
+    "😂 Pappu: Papa mujhe girlfriend chahiye!\n😡 Papa: Maar khayega?\n🤣 Pappu: Ji, wahi to girlfriend ka kaam hai!",
+    "😅 Santa: Mujhe English nahi aati!\n🤣 Banta: Toh WhatsApp pe likhta kyu hai!",
+    "🤣 Husband: Tum kitna pyar karte ho?\n😅 Husband: Jab tak wifi chal raha ho!",
+    "😂 Teacher: Computer ka baap kaun?\n😅 Student: Data!",
+    "🤣 Friend: Exam me kaisa likha?\n😅 Dost: Pen hi chal raha tha, dimaag off tha!",
+    "😂 Wife: Aaj khana kaisa tha?\n😅 Husband: Taste Google pe search karna padega!",
+    "🤣 Santa: Main exercise karta hu.\n😅 Banta: Kaunsi?\n😂 Santa: Phone charge karte waqt plug lagana!",
+    "😅 Student: Sir, mera dimaag bandh ho jata hai!\n👨‍🏫 Teacher: To chalu karke kaam kar!",
+    "😂 Pappu: Mumma, mera test achha gaya!\n👩 Mumma: Kaise pata?\n😅 Pappu: Marks to abhi aayenge, par main khush hoon!",
+    "🤣 Wife: Tum mujhse kitna pyar karte ho?\n😅 Husband: Google se zyada… woh mere liye search karta hai!",
+    "😂 Santa: Mere ghar ka wifi slow hai!\n😅 Banta: To router ko chai pila do!",
+    "🤣 Teacher: Tumhara favorite subject kaunsa hai?\n😅 Student: Break time!",
+    "😂 Pappu: Maa, main kal hero banunga!\n👩 Maa: Kaise?\n😅 Pappu: Movie dekh kar!",
+    "🤣 Husband: Tumhara birthday kya chahiye?\n😅 Wife: Bas tumhara time chahiye!\n😂 Husband: To tum mujhe silent mode me daal do!",
+    "😅 Santa: Mere paas itna kaam hai!\n🤣 Banta: To list bana lo.\n😅 Santa: List bhi kal karunga, aaj to relax!",
+    "😂 Teacher: Tumhara naam aur roll no. bolo.\n😅 Student: Sir, roll no. bhool gaya… naam type kar do!",
+    "🤣 Pappu: Sir, mera homework doge?\n👨‍🏫 Teacher: Homework to tumne de diya, ab duplikate banana mushkil hai!",
+    "😂 Wife: Tum mujhe khush kaise rakhte ho?\n😅 Husband: Bas khaana khila kar, sab theek ho jata hai!",
+    "🤣 Santa: Main jald amir banunga!\n😅 Banta: Kaise?\n😂 Santa: Lottery ticket kharid kar… sapne me!",
+    "😅 Doctor: Aapko kitni neend chahiye?\n🤣 Patient: Sir, Friday se Sunday tak full!",
+    "😂 Pappu: Papa, mujhe cricket khelna hai!\n👨 Papa: Accha, par homework pehle.\n😅 Pappu: Papa cricket bhi homework me count hoga?",
+    "🤣 Teacher: Aaj tumne kitna padha?\n😅 Student: Sir, aankhon se dekha to padha maana!",
+    "😂 Wife: Tum mujhe jaldi se phone mil jaoge?\n😅 Husband: Haan, alarm laga do!",
+    "🤣 Santa: Mere ghar me chhota fridge hai!\n😅 Banta: Kya rakha hai?\n😂 Santa: Sirf dreams!",
+    "😅 Pappu: School me sab boring hai!\n🤣 Teacher: Toh tum khud interesting bano!",
+    "😂 Husband: Tumhara favourite color kya hai?\n😅 Wife: Jo mera shopping bag match kare!",
+    "🤣 Student: Sir, internet band ho gaya!\n😅 Teacher: Toh tum bhi break le lo!"
+]
+# 💖 Compliments
+compliments =  [
+    "✨ Tumhari smile pure room ko roshan kar deti hai!",
+    "🌸 Tumhara dil bahut hi saaf aur sundar hai.",
+    "💎 Tum ek rare diamond ki tarah ho, priceless!",
+    "🌞 Tumhari energy sabko khush kar deti hai.",
+    "🌹 Tumhari baaton me ek alag hi mithaas hai.",
+    "🌟 Tum hamesha positive vibes laate ho.",
+    "💖 Tumhara style sabse alag aur classy hai.",
+    "🎶 Tumhari awaaz dil ko sukoon deti hai.",
+    "🌈 Tumhare aas paas sab kuch colorful lagta hai.",
+    "🔥 Tumhari confidence sabse alag hai.",
+    "💎 Tumhari soch bahut hi unique hai.",
+    "🌸 Tumhare dost bahut lucky hain tumhe paake.",
+    "🌞 Tum din ka sabse bright hissa ho.",
+    "🌹 Tumhe dekh kar lagta hai zindagi sundar hai.",
+    "✨ Tum ek chhoti si duniya ho jo sabko pyaari lagti hai.",
+    "🌟 Tumhari aankhen sach me chamakti hui taare hain.",
+    "💖 Tumhare saath waqt udkar nikal jaata hai.",
+    "🌈 Tumhare ideas bahut creative hote hain.",
+    "🎶 Tum ek perfect melody jaisi ho.",
+    "🌸 Tumhari kindness sabse badi strength hai."
+]
 
-# ---------- Helpers ----------
-def clear_and_go(next_step: int, root_placeholder):
-    st.session_state.step = next_step
-    st.session_state.typing_done = False
-    root_placeholder.empty()
-    st.rerun()
 
-def new_joke():
-    jokes = [
-        "👩‍🏫 Teacher: Tum late kyu aaye?\n😅 Pappu: Sir, board pe likha tha 'School Ahead, Go Slow'...\n🤣 to main dheere aaya!",
-        "😆 Why don’t scientists trust atoms?\nBecause they make up everything!",
-        "😂 I told my computer I needed a break, and it said: 'No problem — I'll go to sleep.'",
-        "😹 Why did the scarecrow win an award?\nBecause he was outstanding in his field!",
-        "😅 I would tell you a joke about construction, but I'm still working on it.",
-        "🤣 Why did the math book look sad?\nBecause it had too many problems.",
-        "😂 Why can’t your nose be 12 inches long?\nBecause then it would be a foot!",
-        "😆 Why did the coffee file a police report?\nIt got mugged.",
-        "😹 Parallel lines have so much in common… it’s a shame they’ll never meet.",
-        "😂 Why don’t programmers like nature?\nIt has too many bugs.",
-        "🤣 How does a penguin build its house?\nIgloos it together.",
-        "😅 What do you call fake spaghetti?\nAn impasta!",
-        "😂 Why did the bicycle fall over?\nBecause it was two-tired.",
-        "😆 What do you call cheese that isn't yours?\nNacho cheese!",
-        "🤣 Why did the tomato turn red?\nBecause it saw the salad dressing!"
-    ]
-    st.session_state.current_joke = random.choice(jokes)
+# 🔮 Fortunes
+fortunes = [
+    "🍀 Tumhare liye ek naya moka aane wala hai.",
+    "🌟 Jaldi hi tumhari mehnat rang layegi.",
+    "💰 Aane wale dinon me paisa aur sukh dono milenge.",
+    "🌸 Tumhari life me ek naya dost shamil hone wala hai.",
+    "🔥 Tumhari passion tumhe safalta tak le jayegi.",
+    "🌞 Tumhe ek aisa surprise milega jo tumhe khushi dega.",
+    "🎯 Tumhara focus tumhe goal tak pahunchayega.",
+    "🌈 Tumhari life me ek nayi beginning hone wali hai.",
+    "💖 Tumhe jaldi hi apno ka pyaar aur support milega.",
+    "🌹 Tumhara din aaj bahut lucky hoga.",
+    "🌟 Tumhari soch tumhe naye raaste dikhayegi.",
+    "✨ Tumhara ek sapna jaldi pura hoga.",
+    "🎉 Tumhe khushiyon ki baarish milegi.",
+    "🍀 Tumhari kismat tumhare saath hai.",
+    "🔥 Tum ek naye safar par nikalne wale ho.",
+    "🌸 Tumhe ek acchi khabar sunne ko milegi.",
+    "🌞 Tumhari life me ek bada positive change aane wala hai.",
+    "💎 Tumhara hard work waste nahi jaayega.",
+    "🌈 Tumhari smile kisi aur ki life badal degi.",
+    "🎯 Tum apne goals ko easily achieve kar loge."
+]
 
-# ---------- Floating Hearts ----------
-def floating_hearts(n=10):
-    hearts_html = ""
-    for i in range(n):
-        left = random.randint(5, 95)
-        delay = random.uniform(0, 5)
-        hearts_html += f'<div class="heart" style="left:{left}%; animation-delay:{delay}s;">❤️</div>'
-    st.markdown(hearts_html, unsafe_allow_html=True)
+# 🙌 Blessings
+blessings = [
+    "🙏 Bhagwan tumhe sada khush rakhe.",
+    "🌸 Tumhari zindagi me hamesha sukh-shanti rahe.",
+    "🌟 Tumhari mehnat hamesha rang laye.",
+    "💖 Tumhe hamesha apno ka pyaar mile.",
+    "🌈 Tumhari life hamesha colorful aur khushiyon se bhari ho.",
+    "✨ Tumhara har din ek nayi umeed laye.",
+    "🎉 Tumhe sada safalta aur khushi mile.",
+    "🍀 Tumhari kismat hamesha chamakti rahe.",
+    "🌞 Tumhari zindagi suraj ki roshni ki tarah roshan ho.",
+    "🌹 Tumhara dil hamesha pyaar se bhara rahe.",
+    "🔥 Tumhare raaste me kabhi andhera na ho.",
+    "🌸 Tumhari family hamesha khush rahe.",
+    "🌟 Tumhe sada sehat aur sukoon mile.",
+    "💎 Tumhe hamesha acchi soch aur accha saath mile.",
+    "🌈 Tumhari zindagi me kabhi kamee na ho.",
+    "🎶 Tumhe hamesha sukoon aur chain mile.",
+    "🌞 Tumhari rooh hamesha shanti me rahe.",
+    "🌹 Tumhara har sapna pura ho.",
+    "✨ Tumhe hamesha naye mauke milte rahe.",
+    "🙏 Tumhari muskaan kabhi na mile."
+]
 
-# ---------- Twinkling Stars ----------
-def twinkling_stars(n=30):
-    stars_html = ""
-    for i in range(n):
-        left = random.randint(0, 100)
-        top = random.randint(0, 100)
-        size = random.randint(8, 16)
-        delay = random.uniform(0, 3)
-        stars_html += f'<div class="star" style="left:{left}%; top:{top}%; font-size:{size}px; animation-delay:{delay}s;">✦</div>'
-    st.markdown(stars_html, unsafe_allow_html=True)
+# 🎲 Surprise Mix
+def get_surprise():
+    all_messages = jokes + compliments + fortunes + blessings
+    return random.choice(all_messages)
 
-# ---------- MAIN ----------
-root = st.empty()
-with root.container():
-    twinkling_stars(30)  # Add stars in background
-    st.markdown('<div class="full-center fade-container">', unsafe_allow_html=True)
-    lines_box = st.container()
+# ⌨️ Typing animation
+def type_text(text):
+    placeholder = st.empty()
+    full_text = ""
+    for char in text:
+        full_text += char
+        placeholder.markdown(f"<div class='box'>{full_text}</div>", unsafe_allow_html=True)
+        time.sleep(0.02)
 
-    # Step 0: Surprise Box
-    if st.session_state.step == 0:
-        
-        lines = ["🎁 Surprise!"]
-        if not st.session_state.typing_done:
-            type_lines(lines, lines_box, speed=0.05)
-            st.session_state.typing_done = True
-        else:
-            for l in lines:
-                lines_box.markdown(f"<div class='typing'>{l}</div>", unsafe_allow_html=True)
-        if st.session_state.typing_done and st.button("✨ Open Gift"):
+# 🎁 Title
+st.markdown("<div class='big-title'>🎁 Surprise Box</div>", unsafe_allow_html=True)
+
+if user_name:
+    st.success(f"नमस्ते {user_name}! चलो देखते हैं तुम्हारे लिए क्या मजेदार है 🎉")
+
+    # Tabs
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["😂 Jokes", "💖 Compliments", "🔮 Fortunes", "🙌 Blessings", "🎲 Surprise Mix"])
+
+    with tab1:
+        if st.button("😂 Joke सुनो"):
+            type_text(random.choice(jokes))
+
+    with tab2:
+        if st.button("💖 Compliment लो"):
+            type_text(random.choice(compliments))
+
+    with tab3:
+        if st.button("🔮 Lucky Fortune"):
+            type_text(random.choice(fortunes))
+
+    with tab4:
+        if st.button("🙌 Blessing लो"):
+            type_text(random.choice(blessings))
+
+    with tab5:
+        if st.button("🎲 Surprise Mix"):
             st.balloons()
-            
-            clear_and_go(1, root)
-
-    # Step 1: Welcome
-    elif st.session_state.step == 1:
-        lines = ["💖 Welcome 💖", "💖 My dear Bestie 💖"]
-        if not st.session_state.typing_done:
-            type_lines(lines, lines_box, speed=0.04)
-            st.session_state.typing_done = True
-        else:
-            for l in lines:
-                lines_box.markdown(f"<div class='typing'>{l}</div>", unsafe_allow_html=True)
-        if st.session_state.typing_done and st.button("😂 Tell me a Joke"):
-            new_joke()
-        
-            clear_and_go(2, root)
-
-    # Step 2: Random Joke
-    elif st.session_state.step == 2:
-        if st.session_state.current_joke == "":
-            new_joke()
-        lines = st.session_state.current_joke.split("\n")
-        if not st.session_state.typing_done:
-            type_lines(lines, lines_box, speed=0.035)
-            st.session_state.typing_done = True
-        else:
-            for l in lines:
-                lines_box.markdown(f"<div class='typing'>{l}</div>", unsafe_allow_html=True)
-
-        col1, col2 = st.columns([1,1])
-        with col1:
-            if st.button("💖 Show Love"):
-                clear_and_go(3, root)
-        with col2:
-            if st.button("🔄 Refresh Joke"):
-                new_joke()
-                st.session_state.typing_done = False
-                st.rerun()
-
-    # Step 3: Love Messages with hearts
-    elif st.session_state.step == 3:
-        floating_hearts(15)
-        lines = [
-            "💖 May your life always overflow with happiness & laughter!",
-            "🌸 You deserve all the joy in the world, Bestie!",
-            "⭐ Keep shining bright like the star you are!",
-            "🤗 Stay happy, smiling, and forever amazing!"
-        ]
-        if not st.session_state.typing_done:
-            st.balloons()
-            type_lines(lines, lines_box, speed=0.035)
-            st.session_state.typing_done = True
-        else:
-            for l in lines:
-                lines_box.markdown(f"<div class='typing'>{l}</div>", unsafe_allow_html=True)
-
-        if st.session_state.typing_done and st.button("🔄 Start Again"):
-            clear_and_go(0, root)
-
-    st.markdown('</div>', unsafe_allow_html=True)
+            type_text(get_surprise())
