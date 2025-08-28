@@ -11,7 +11,7 @@ st.markdown("""
     .big-title { font-size: 36px; font-weight: bold; color: #ff2e63; }
     .box {
         font-size: 22px;
-        background: white;
+        background: black;
         padding: 20px;
         border-radius: 20px;
         display: inline-block;
